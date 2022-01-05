@@ -1,0 +1,2 @@
+file ::= command | command file
+command ::= op opd1 opd2 tgt 
