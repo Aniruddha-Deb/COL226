@@ -1,7 +1,8 @@
-1  0 0 0     ; input the first value into 0
-7  0 0 1     ; set the value of register 1 to be 0
-12 0 1 2     ; check if the input value is greater than 0
-13 2 0 5     ; if the input value is greater than 0, go to line 5
-7  1 0 0     ; if not, then subtract it from 0 and store the value in reg0
-15 0 0 0     ; output the value
-0  0 0 0
+(1,0,0,0)
+(7,0,0,1)
+(12,0,1,2)
+(13,2,0,5)
+(7,1,0,0)
+(15,0,0,0)
+(0,0,0,0)
+
