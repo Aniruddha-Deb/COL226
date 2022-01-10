@@ -1,17 +1,16 @@
-fun command_from_list lst =
-	(List.nth(lst,0), List.nth(lst,1), List.nth(lst,2), List.nth(lst,3));
+fun command_from_list (a::b::c::d::[]) = (a,b,c,d)
 
-fun stream_to_int_list stream ctr =
-	if ctr = 4 then nil else
-	case TextIO.scanStream (Int.scan StringCvt.DEC) stream of
-		SOME num => num :: stream_to_int_list stream (ctr+1)
-	  | NONE => nil;
-		
-fun read_file_to_vector in_stream =
+fun sep a = (a = #"(" orelse a = #")" orelse a = #"," orelse a = #"\n")
+
+fun parse_cmd str = List.map valOf (List.map Int.fromString (String.tokens sep str))
+	
+fun read_file_to_vector in_stream = 
 let
-	val lst = stream_to_int_list in_stream 0 
+	val in_str = TextIO.inputLine in_stream
 in
-	if List.length lst <> 4 then [] else command_from_list lst :: read_file_to_vector in_stream
+	case in_str of 
+	  SOME str => command_from_list (parse_cmd str) :: read_file_to_vector in_stream
+	| NONE => []
 end
 
 exception NotExist;
@@ -85,6 +84,7 @@ in
 	| 13 => interpret code (if (access mem opd1) = 1 then tgt else pc+1) mem
 	| 14 => interpret code tgt mem
 	| 15 => interpret code (pc+1) (pval mem opd1)
+	| 16 => interpret code (pc+1) (assign mem (tgt, opd1))
 end
 
 fun read_bdim file =
