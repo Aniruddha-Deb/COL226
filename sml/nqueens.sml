@@ -1,7 +1,8 @@
 exception Backtrack;
 
 fun safe (x,y) [] = true |
-    safe (x,y) ((x',y')::L) = x <> x' andalso y' <> y andalso (x-x') <> (y-y') andalso (x-x') <> (y'-y) andalso safe (x,y) L;
+    safe (x,y) ((x',y')::L) = x <> x' andalso y' <> y andalso (x-x') <> (y-y') 
+    andalso (x-x') <> (y'-y) andalso safe (x,y) L;
 
 fun nextqueen n 0 L 0 = (0,0) |
     nextqueen n m L i =
