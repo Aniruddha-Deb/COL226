@@ -1,3 +1,11 @@
+(* Notes:
+ * - Liberty has been taken in I/O, i.e. input prompts are prefixed with 'input:'
+ *   and output is not prefixed
+ * - The function `interpret` does not return unit. To make debugging easier, 
+ *   it returns the memory dictionary (a list of (key,value) tuples), representing
+ *   the memory at the end of execution of the program
+ *)
+
 (* parsing related functions *)
 fun command_from_list (a::b::c::d::[]) = (a,b,c,d)
 
@@ -19,14 +27,14 @@ end
 exception NotExist;
 
 (* since memory access is in the positive integer domain, a dictionary is used
- * to represent memory. I've implemented it as a simple recursive list here.
+ * to represent memory. I've implemented it as a simple list of (key, value) pairs
  *)
 fun assign ((k':int,v':int)::d) (k:int,v:int) = if k < 0 then raise NotExist else if k' = k then (k,v)::d else (k',v')::(assign d (k,v))
 | assign [] (k:int, v:int) = (k,v)::[];
 fun access ((k':int,v':int)::d) (k:int) = if k < 0 then raise NotExist else if k' = k then v' else access d k 
 | access [] (k:int) = raise NotExist;
 
-(* opcode related functions*)
+(* opcode related functions *)
 
 fun inp mem opd1 tgt = 
 let
@@ -55,12 +63,9 @@ fun modulo mem opd1 opd2 tgt = assign mem (tgt,((access mem opd1) mod (access me
 fun beq mem opd1 opd2 tgt = assign mem (tgt,(if (access mem opd1) = (access mem opd2) then 1 else 0));
 fun bgt mem opd1 opd2 tgt = assign mem (tgt,(if (access mem opd1) > (access mem opd2) then 1 else 0));
 
-fun pval mem opd1 = (print ("output: " ^ Int.toString(access mem opd1) ^ "\n") ; mem)
+fun pval mem opd1 = (print (Int.toString(access mem opd1) ^ "\n") ; mem)
 
-(* the main interpreter. Runs recursively, and operation depends on opcode. 
- * Kind of like a turing machine? (Don't know if I should use that term without
- * knowing what it means :P)
- *)
+(* the main interpreter. Runs recursively, and operation depends on opcode. *)
 fun interpret_rec (code: (int * int * int * int) vector) (pc: int) mem =
 let 
 	val (opn,opd1,opd2,tgt) = (Vector.sub(code,pc))
@@ -87,6 +92,8 @@ in
 
 	handle NotExist => mem
 end
+
+(* the primary function for interpreting and running BDIM files *)
 
 fun interpret file =
 let
