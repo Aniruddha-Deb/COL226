@@ -29,11 +29,25 @@ inorder(empty,[]).
 inorder(node(N,L,R), T) :- inorder(L,PL), inorder(R,PR), append([N], PR, K), append(PL, K, T).
 
 trPreorder(empty,[]).
-trPreorder(BT, T) :- trPreorderAcc([BT],[],T1), T is T1.
-
-
+trPreorder(BT, T) :- trPreorderAcc([BT],[],T).
 trPreorderAcc([(node(N,L,R))|S], TP, T) :- append([L,R],S,S1), append(TP,[N],TPP), trPreorderAcc(S1, TPP, T).
-trPreorderAcc([],TP,T) :- T is TP.
+trPreorderAcc([empty|S], TP, T) :- trPreorderAcc(S, TP, T).
+trPreorderAcc([],TP,TP).
+
+trPostorder(empty,[]).
+trPostorder(BT, T) :- trPostorderAcc([BT],[],T).
+trPostorderAcc([(node(N,L,R))|S], TP, T) :- append([R,L],S,S1), append([N],TP,TPP), trPostorderAcc(S1, TPP, T).
+trPostorderAcc([empty|S], TP, T) :- trPostorderAcc(S, TP, T).
+trPostorderAcc([],TP,TP).
+
+/* TODO think about this */
+trInorder(empty,[]).
+trInorder(BT, T) :- trInorderAcc([BT],[],[],T).
+trInorderAcc([(node(NL,LL,RL))|LS], RS, TP, T) :- append([LL],LS,LS1), append([RL],RS,RS1), append([NL],TP,TP1), trInorderAcc(LS1, RS1, TP1, T).
+trInorderAcc([], [(node(NR,LR,RR))|RS], TP, T) :- append([RR],RS,RS1), append(TP,[NR],TP1), trInorderAcc([LR], RS1, TP1, T).
+trInorderAcc([empty|S], RS, TP, T) :- trInorderAcc(S, RS, TP, T).
+trInorderAcc([], [empty|S], TP, T) :- trInorderAcc([], S, TP, T).
+trInorderAcc([],[],TP,TP).
 
 toString(empty,"()").
 toString(node(N,L,R), S) :- toString(L, Lstr), toString(R, Rstr), 
