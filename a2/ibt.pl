@@ -28,6 +28,13 @@ postorder(node(N,L,R), T) :- postorder(L,PL), postorder(R,PR), append(PL, PR, K)
 inorder(empty,[]).
 inorder(node(N,L,R), T) :- inorder(L,PL), inorder(R,PR), append([N], PR, K), append(PL, K, T).
 
+trPreorder(empty,[]).
+trPreorder(BT, T) :- trPreorderAcc([BT],[],T1), T is T1.
+
+
+trPreorderAcc([(node(N,L,R))|S], TP, T) :- append([L,R],S,S1), append(TP,[N],TPP), trPreorderAcc(S1, TPP, T).
+trPreorderAcc([],TP,T) :- T is TP.
+
 toString(empty,"()").
 toString(node(N,L,R), S) :- toString(L, Lstr), toString(R, Rstr), 
                             number_string(N, Nstr), 
