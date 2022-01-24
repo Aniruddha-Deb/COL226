@@ -49,6 +49,23 @@ trInorderAcc([empty|S], RS, TP, T) :- trInorderAcc(S, RS, TP, T).
 trInorderAcc([], [empty|S], TP, T) :- trInorderAcc([], S, TP, T).
 trInorderAcc([],[],TP,TP).
 
+eulerTour(empty,[]).
+eulerTour(node(N,L,R),T) :- eulerTour(L,ETL), eulerTour(R,ETR), append([N],ETL,ETLL), append([N],ETR,ETRR), append(ETRR,[N],ETRF), append(ETLL, ETRF, T).
+
+getCount([],_1,_2) :- false.
+getCount([(X,Y)|L],N,C) :- ((X == N) -> C is Y) ; getCount(L,N,C).
+
+incrCount([],N,LF) :- LF = [(N,1)].
+incrCount([(X,Y)|L],N,LF) :- ((X == N) -> Yp1 is Y+1, LF = [(X,Yp1)|L]) ; (incrCount(L,N,LP), LF = [(X,Y)|LP]).
+
+extractFromET([],_1,_2,F,F).
+extractFromET([N|L], Cnt, Num, E, F) :- 
+    (incrCount(Cnt, N, CntNew), getCount(CntNew,N,C), (C == Num -> append(E,[N],E1); E1=E), extractFromET(L,CntNew,Num,E1,F)). 
+
+preET(BT,L) :- eulerTour(BT,T), extractFromET(T,[],1,[],L).
+inET(BT,L) :- eulerTour(BT,T), extractFromET(T,[],2,[],L).
+postET(BT,L) :- eulerTour(BT,T), extractFromET(T,[],3,[],L).
+
 toString(empty,"()").
 toString(node(N,L,R), S) :- toString(L, Lstr), toString(R, Rstr), 
                             number_string(N, Nstr), 
@@ -84,3 +101,19 @@ delete(N, BST1, BST2)
 
 lookup(_, empty) :- false.
 lookup(N, node(Root,L,R)) :- (N == Root); ((N < Root) -> lookup(N,L); lookup(N,R)).
+
+insert(N, empty, BST2) :- BST2 = node(N,empty,empty).
+insert(N, node(Root,L,R), BST2) :- 
+    ((N < Root) -> insert(N, L, BST2L), BST2 = node(Root,BST2L,R)); 
+    (N > Root) -> insert(N, R, BST2R), BST2 = node(Root,L,BST2R).
+
+/* TODO impl the fol.
+
+balance
+
+inorderPredecessor()
+
+inorderSuccessor()
+
+delete(N, root())
+*/
