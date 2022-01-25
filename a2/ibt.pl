@@ -6,10 +6,12 @@ author: Aniruddha Deb
 ibt(empty).
 ibt(node(N,L,R)) :- integer(N), ibt(L), ibt(R).
 
-/* make a test binary tree */
+/* make a test binary tree and a test bst*/
 leaf(T,N) :- T = node(N,empty,empty).
 
 testibt(T) :- leaf(L5,5), leaf(L4,4), leaf(L7,7), T = node(1,node(2,empty,L4),node(3,L5,node(6,L7,empty))).
+testbst(T) :- leaf(L1,1), leaf(L4,4), leaf(L7,7), leaf(L9,9), leaf(L12,12), leaf(L14,14),
+              T = node(6,node(3,node(2,L1,empty),node(5,L4,empty)),node(11,node(8,L7,L9),node(13,L12,L14))).
 
 /* functions in assignment */
 
@@ -40,13 +42,11 @@ trPostorderAcc([(node(N,L,R))|S], TP, T) :- append([R,L],S,S1), append([N],TP,TP
 trPostorderAcc([empty|S], TP, T) :- trPostorderAcc(S, TP, T).
 trPostorderAcc([],TP,TP).
 
-/* TODO think about this */
 trInorder(empty,[]).
 trInorder(BT, T) :- trInorderAcc([BT],[],[],T).
-trInorderAcc([(node(NL,LL,RL))|LS], RS, TP, T) :- append([LL],LS,LS1), append([RL],RS,RS1), append([NL],TP,TP1), trInorderAcc(LS1, RS1, TP1, T).
-trInorderAcc([], [(node(NR,LR,RR))|RS], TP, T) :- append([RR],RS,RS1), append(TP,[NR],TP1), trInorderAcc([LR], RS1, TP1, T).
-trInorderAcc([empty|S], RS, TP, T) :- trInorderAcc(S, RS, TP, T).
-trInorderAcc([], [empty|S], TP, T) :- trInorderAcc([], S, TP, T).
+trInorderAcc([node(N,L,R)|LS], PS, TP, T) :- trInorderAcc([L|LS], [node(N,L,R)|PS], TP, T).
+trInorderAcc([empty|LS], PS, TP, T) :- trInorderAcc(LS, PS, TP, T).
+trInorderAcc([],[node(N,_,R)|PS],TP,T) :- append(TP,[N],TPP), trInorderAcc([R], PS, TPP, T).
 trInorderAcc([],[],TP,TP).
 
 eulerTour(empty,[]).
@@ -90,30 +90,27 @@ allGreaterThan([V|L],N) :- V > N, allGreaterThan(L,N).
 isBST(empty).
 isBST(node(N,L,R)) :- allNodes(L,Ln), allNodes(R,Rn), allLessThan(Ln,N), allGreaterThan(Rn,N).
 
-/* TODO think about this
-makeBST([],_).
-makeBST([A|L],node(N,L,R)) :- 
 
-make this work in conjunction with
-insert(N, BST1, BST2) 
-delete(N, BST1, BST2)
-*/
+split([N],[],N,[]).
+split(L,A,N,B) :- length(L,Len), divmod(Len,2,LA,Rem), 
+    (Rem =:= 1 -> append(A,[N|B],L), length(A,LA), length(B,LA));
+    (append(A,[N|B],L), length(A,LA), length([N|B],LA)).
+makeBST([],_).
+makeBST(L, BST) :- sort(L,LS), split(LS,A,N,B), makeBST(A,LBST), makeBST(B,RBST), BST = node(N,LBST,RBST).
 
 lookup(_, empty) :- false.
 lookup(N, node(Root,L,R)) :- (N == Root); ((N < Root) -> lookup(N,L); lookup(N,R)).
+
+pred(X,L,P) :- append(_,[P,X|_],L).
+succ(X,L,P) :- append(_,[X,P|_],L).
 
 insert(N, empty, BST2) :- BST2 = node(N,empty,empty).
 insert(N, node(Root,L,R), BST2) :- 
     ((N < Root) -> insert(N, L, BST2L), BST2 = node(Root,BST2L,R)); 
     (N > Root) -> insert(N, R, BST2R), BST2 = node(Root,L,BST2R).
 
-/* TODO impl the fol.
-
-balance
-
-inorderPredecessor()
-
-inorderSuccessor()
-
-delete(N, root())
-*/
+delete(N, node(N,empty,empty), BST2) :- BST2 = empty.
+delete(N, node(Root,L,R), BST2) :- 
+    ((N < Root) -> delete(N, L, BST2L), BST2 = node(Root,BST2L,R)); 
+    ((N > Root) -> delete(N, R, BST2R), BST2 = node(Root,L,BST2R));
+    (inorder(node(Root,L,R),T), pred(N,T,Pred), delete(Pred, L, BST2L), BST2 = node(Pred,BST2L,R)).
