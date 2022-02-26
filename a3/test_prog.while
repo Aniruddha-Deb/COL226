@@ -1,0 +1,17 @@
+program test :: 
+    var x,y : int;
+    var z : bool;
+{
+    x := 5;
+    _
+    read y;
+    if x+y = 120 then {
+        z := tt;
+    }
+    else {
+        z := ff;
+    }
+    endif;
+    write y;
+}
+
