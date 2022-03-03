@@ -1,21 +1,14 @@
-structure DataTypes = struct
-    datatype Keyword = PROGRAM | VAR | INT | BOOL | READ | WRITE | IF | THEN | ELSE |
-    ENDIF | WHILE | DO | ENDWH | TRUE | FALSE
-
-    datatype Separator = BLOCKSTART | COLON | SEMICOLON | COMMA | LBRACE | RBRACE | 
-    LPAREN | RPAREN
-
-    datatype Operator = ADD | UMINUS | SUB | MUL | DIV | MOD | EQ | NE | GT | GE | 
-    LT | LE | AND | OR | NOT | ASSIGN
-
-    datatype Token = KEYWORD of Keyword | SEPARATOR of Separator | IDENTIFIER of string |
-    OPERATOR of Operator | NUMERAL of int | EOF
-
-    datatype VarType = Integer | Boolean
-
-    datatype ASTNodeData = Program of string | DeclSeq | Declaration of string*VarType |
-    CmdSeq | Assignment of string | While | If | Read | Write | Expression of Operator | 
-    IntLiteral of int | BoolLiteral of bool
-
-    datatype AST = empty | Node of int*ASTNodeData*(AST list)
+structure DataTypes =
+struct 
+    datatype PROG  = PROG of (DEC list)*(CMD list)
+    and      DEC   = INT of string | BOOL of string 
+    and      CMD   = RD of string | WR of EXPR | WH of EXPR*(CMD list) | 
+                     ITE of EXPR*(CMD list)*(CMD list) | SET of string*EXPR
+    and      EXPR  = ADD of EXPR*EXPR | SUB of EXPR*EXPR | 
+                     MUL of EXPR*EXPR | DIV of EXPR*EXPR | 
+                     MOD of EXPR*EXPR | NUM of int | REF of string |
+                     OR of EXPR*EXPR | AND of EXPR*EXPR | NOT of EXPR |
+                     LT of EXPR*EXPR | GT of EXPR*EXPR | GE of EXPR*EXPR |
+                     LE of EXPR*EXPR | EQ of EXPR*EXPR | NE of EXPR*EXPR |
+                     TRUE | FALSE
 end;

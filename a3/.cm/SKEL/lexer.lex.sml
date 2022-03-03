@@ -1,2 +1,2 @@
 Skeleton 5
-d2f3d"List"ä¢String"ä¢Vector"ad"WhileLex"h3aä¢UserDeclarations"è0aä¢Internal"h1aä¢StartStates"ÿ?bbbd2bc2egp1ÿ,egp2ÿÿf1ÿf2ä¢Unsafe"ÿf6ÿ?Cd"Char"ÿ,ÿÿÿNæ0ÿ‚"
+ae"WhileLexFun"i2aä¢Tokens"gp1c"While_TOKENS"f3d"Char"ä¢TextIO"ä¢Vector"h3aä¢yyInput"jh3aä¢TIO"gp1ÿ6ad"TSIO"gp2ÿd"StreamIO"ad"TPIO"gp1d"TextPrimIO"h0aä¢UserDeclarations"h1aä¢T"gp1ÿbbd2egp1ÿ‚f7d"IO"ÿCÿ‚ÿ‚.d"List"d"Int"ÿ?Nf0f1ÿ

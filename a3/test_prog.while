@@ -3,7 +3,6 @@ program test ::
     var z : bool;
 {
     x := 5;
-    _
     read y;
     if x+y = 120 then {
         z := tt;

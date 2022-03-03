@@ -1,64 +1,76 @@
-open DataTypes
+structure T = Tokens
 
-type lexresult = int * Token
+type pos = int
+type svalue = T.svalue
+type ('a,'b) token = ('a,'b) T.token
+type lexresult = (svalue,pos) token
+type lexarg = string
+type arg = lexarg
+
+val lin = ref 1;
+val col = ref 0;
+val eolpos = ref 0;
+
+val eof = fn filename => T.TOK_EOF (!lin, !col);
 
 fun inc a = a := !a + 1
-val linenum = ref 1
 
-val eof = fn () => (!linenum, EOF)
 %%
-%structure WhileLex
+%header (functor WhileLexFun(structure Tokens: While_TOKENS));
+%arg (fileName: string);
 alpha=[A-Za-z];
 digit=[0-9];
 ws = [\ \t];
+eol = ("\013\010"|"\010"|"\013");
 
 %%
-\n => (inc linenum; lex());
-{ws}+ => (lex());
+{ws}* => (continue ());
+{eol} => (inc lin; eolpos:=yypos+size yytext; continue ());
 
-"while" => ((!linenum,KEYWORD WHILE));
-"if" => ((!linenum,KEYWORD IF));
-"then" => ((!linenum,KEYWORD THEN));
-"else" => ((!linenum,KEYWORD ELSE));
-"endif" => ((!linenum,KEYWORD ENDIF));
-"endwh" => ((!linenum,KEYWORD ENDWH));
-"read" => ((!linenum,KEYWORD READ));
-"write" => ((!linenum,KEYWORD WRITE));
-"program" => ((!linenum,KEYWORD PROGRAM));
-"var" => ((!linenum,KEYWORD VAR));
-"int" => ((!linenum,KEYWORD INT));
-"bool" => ((!linenum,KEYWORD BOOL));
-"do" => ((!linenum,KEYWORD DO));
-"tt" => ((!linenum,KEYWORD TRUE));
-"ff" => ((!linenum,KEYWORD FALSE));
+"while" => (col:=yypos-(!eolpos); T.TOK_WHILE(!lin,!col));
+"if" => (col:=yypos-(!eolpos); T.TOK_IF(!lin,!col));
+"then" => (col:=yypos-(!eolpos); T.TOK_THEN(!lin,!col));
+"else" => (col:=yypos-(!eolpos); T.TOK_ELSE(!lin,!col));
+"endif" => (col:=yypos-(!eolpos); T.TOK_ENDIF(!lin,!col));
+"endwh" => (col:=yypos-(!eolpos); T.TOK_ENDWH(!lin,!col));
+"read" => (col:=yypos-(!eolpos); T.TOK_READ(!lin,!col));
+"write" => (col:=yypos-(!eolpos); T.TOK_WRITE(!lin,!col));
+"program" => (col:=yypos-(!eolpos); T.TOK_PROGRAM(!lin,!col));
+"var" => (col:=yypos-(!eolpos); T.TOK_VAR(!lin,!col));
+"int" => (col:=yypos-(!eolpos); T.TOK_INT(!lin,!col));
+"bool" => (col:=yypos-(!eolpos); T.TOK_BOOL(!lin,!col));
+"do" => (col:=yypos-(!eolpos); T.TOK_DO(!lin,!col));
+"tt" => (col:=yypos-(!eolpos); T.TOK_TT(!lin,!col));
+"ff" => (col:=yypos-(!eolpos); T.TOK_FF(!lin,!col));
 
-"{" => ((!linenum,SEPARATOR LBRACE));
-"}" => ((!linenum,SEPARATOR RBRACE));
-"(" => ((!linenum,SEPARATOR LPAREN));
-")" => ((!linenum,SEPARATOR RPAREN));
-"," => ((!linenum,SEPARATOR COMMA));
-";" => ((!linenum,SEPARATOR SEMICOLON));
-":" => ((!linenum,SEPARATOR COLON));
-"::" => ((!linenum,SEPARATOR BLOCKSTART));
+"{" => (col:=yypos-(!eolpos); T.TOK_LBRACE(!lin,!col));
+"}" => (col:=yypos-(!eolpos); T.TOK_RBRACE(!lin,!col));
+"(" => (col:=yypos-(!eolpos); T.TOK_LPAREN(!lin,!col));
+")" => (col:=yypos-(!eolpos); T.TOK_RPAREN(!lin,!col));
+"," => (col:=yypos-(!eolpos); T.TOK_COMMA(!lin,!col));
+";" => (col:=yypos-(!eolpos); T.TOK_SEMICOLON(!lin,!col));
+":" => (col:=yypos-(!eolpos); T.TOK_COLON(!lin,!col));
+"::" => (col:=yypos-(!eolpos); T.TOK_BLOCKSTART(!lin,!col));
 
-"+" => ((!linenum,OPERATOR ADD));
-"~" => ((!linenum,OPERATOR UMINUS));
-"-" => ((!linenum,OPERATOR SUB));
-"*" => ((!linenum,OPERATOR MUL));
-"/" => ((!linenum,OPERATOR DIV));
-"%" => ((!linenum,OPERATOR MOD));
-"=" => ((!linenum,OPERATOR EQ));
-"<>" => ((!linenum,OPERATOR NE));
-">" => ((!linenum,OPERATOR GT));
-">=" => ((!linenum,OPERATOR GE));
-"<" => ((!linenum,OPERATOR LT));
-"<=" => ((!linenum,OPERATOR LE));
-"&&" => ((!linenum,OPERATOR AND));
-"||" => ((!linenum,OPERATOR OR));
-"!" => ((!linenum,OPERATOR NOT));
-":=" => ((!linenum,OPERATOR ASSIGN));
+"+" => (col:=yypos-(!eolpos); T.TOK_ADD(!lin,!col));
+"~" => (col:=yypos-(!eolpos); T.TOK_UMINUS(!lin,!col));
+"-" => (col:=yypos-(!eolpos); T.TOK_SUB(!lin,!col));
+"*" => (col:=yypos-(!eolpos); T.TOK_MUL(!lin,!col));
+"/" => (col:=yypos-(!eolpos); T.TOK_DIV(!lin,!col));
+"%" => (col:=yypos-(!eolpos); T.TOK_MOD(!lin,!col));
+"=" => (col:=yypos-(!eolpos); T.TOK_EQ(!lin,!col));
+"<>" => (col:=yypos-(!eolpos); T.TOK_NE(!lin,!col));
+">" => (col:=yypos-(!eolpos); T.TOK_GT(!lin,!col));
+">=" => (col:=yypos-(!eolpos); T.TOK_GE(!lin,!col));
+"<" => (col:=yypos-(!eolpos); T.TOK_LT(!lin,!col));
+"<=" => (col:=yypos-(!eolpos); T.TOK_LE(!lin,!col));
+"&&" => (col:=yypos-(!eolpos); T.TOK_AND(!lin,!col));
+"||" => (col:=yypos-(!eolpos); T.TOK_OR(!lin,!col));
+"!" => (col:=yypos-(!eolpos); T.TOK_NOT(!lin,!col));
+":=" => (col:=yypos-(!eolpos); T.TOK_ASSIGN(!lin,!col));
 
-{digit}+ => ((!linenum,NUMERAL (foldl (fn(a,r)=>ord(a)-ord(#"0")+10*r) 0 (explode yytext))));
-[A-Za-z][A-Za-z0-9]* => ((!linenum,IDENTIFIER yytext));
+{digit}+ => (col:=yypos-(!eolpos);
+        T.TOK_NUM(foldl (fn(a,r)=>ord(a)-ord(#"0")+10*r) 0 (explode yytext), !lin, !col));
+[A-Za-z][A-Za-z0-9]* => (col:=yypos-(!eolpos);T.TOK_ID(yytext,!lin,!col));
 
-. => (print ("Unknown token found at " ^ (Int.toString (!linenum)) ^ ": <" ^ yytext ^ ">. Continuing.\n"); lex());
+. => (print ("Unknown token found at " ^ (Int.toString (!lin)) ^ ": <" ^ yytext ^ ">. Continuing.\n"); continue());

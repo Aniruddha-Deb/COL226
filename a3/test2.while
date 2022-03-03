@@ -1,0 +1,17 @@
+program test2 ::
+    var word1,word2,id: int;
+    var x,y,z: int;
+    var a,b,c: bool;
+{
+    while x > a < y + <= z >= a do {
+        x := 5;
+        y := z-3;
+        z := z-1;
+    } endwh;
+    if x = 5 then {
+        y := 2;
+    }
+    else {
+        y := 3;
+    } endif;
+}
