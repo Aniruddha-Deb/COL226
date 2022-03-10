@@ -48,20 +48,18 @@ sequences of commands and variable definitions much easier. The type definition
 of the AST is as follows:
 
 ```
-structure DataTypes =
-struct 
-    datatype PROG  = PROG of (DEC list)*(CMD list)
-    and      DEC   = INT of string | BOOL of string 
-    and      CMD   = RD of string | WR of EXPR | WH of EXPR*(CMD list) | 
-                     ITE of EXPR*(CMD list)*(CMD list) | SET of string*EXPR
-    and      EXPR  = ADD of EXPR*EXPR | SUB of EXPR*EXPR | 
-                     MUL of EXPR*EXPR | DIV of EXPR*EXPR | 
-                     MOD of EXPR*EXPR | NUM of int | REF of string |
-                     OR of EXPR*EXPR | AND of EXPR*EXPR | NOT of EXPR |
-                     LT of EXPR*EXPR | GT of EXPR*EXPR | GE of EXPR*EXPR |
-                     LE of EXPR*EXPR | EQ of EXPR*EXPR | NE of EXPR*EXPR |
-                     TRUE | FALSE
-end;
+datatype PROG  = PROG of (DEC list)*(CMD list)
+and      DEC   = INT of string | BOOL of string 
+and      CMD   = RD of string | WR of EXPR | WH of EXPR*(CMD list) | 
+                ITE of EXPR*(CMD list)*(CMD list) | SETINT of string*EXPR |
+                SETBOOL of string*EXPR
+and      EXPR  = ADD of EXPR*EXPR | SUB of EXPR*EXPR | 
+                MUL of EXPR*EXPR | DIV of EXPR*EXPR | 
+                MOD of EXPR*EXPR | NUM of int | IREF of string |
+                OR of EXPR*EXPR | AND of EXPR*EXPR | NOT of EXPR |
+                LT of EXPR*EXPR | GT of EXPR*EXPR | GE of EXPR*EXPR |
+                LE of EXPR*EXPR | EQ of EXPR*EXPR | NE of EXPR*EXPR |
+                TRUE | FALSE | BREF of string
 ```
 
 A While program's AST root node is `PROG`, which has a list of declarations and 
@@ -83,11 +81,11 @@ both tokens and node datatypes). In practice, this is (messily?) rectified by
 prefixing `TOK_` to all the tokens and leaving the AST datatypes as is to 
 avoid collisions
 
-NOTE 2: the definitions of `prependAll` and `makeVarList` are given in § Other
+NOTE 2: the definitions of `set`, `prependAll` and `makeVarList` are given in § Other
 Implementation Decisions. In short, `prependAll` prepends all the variable declations
 in that line (a line may have multiple variable declarations, eg `var x,y,z: int`)
 to the main variable list, and `makeVarList` constructs that list of variable
-declarations from a list of identifiers
+declarations from a list of identifiers. `set` makes an 
 
 ```
 prog -> PROGRAM IDENTIFIER BLOCKSTART declist cmdseq { PROG (declist, cmdseq) }
@@ -104,7 +102,7 @@ cmdlist -> cmd SEMICOLON cmdlist { cmd :: cmdlist }
          | ε                     { [] }
 cmd -> READ IDENTIFIER { RD IDENTIFIR.value }
      | WRITE expr      { WR expr }
-     | IDENTIFIER ASSIGN expr { SET (IDENTIFIER.value,expr) }
+     | IDENTIFIER ASSIGN expr { set IDENTIFIER.value expr }
      | IF expr THEN cmdseq ELSE cmdseq ENDIF { ITE (expr,cmdseq1,cmdseq2) }
      | WHILE expr DO cmdseq ENDWH { WH (expr,cmdseq) }
 
@@ -141,7 +139,7 @@ iexp4 -> iexp4 MOD iexp5 {MOD (iexp4,iexp5)}
      | iexp5 {iexp5}
 iexp5 -> ADD NUM {NUM NUM.value}
      | UMINUS NUM {NUM (-1*NUM.value)}
-     | IDENTIFIER {REF IDENTIFIER.value}
+     | IDENTIFIER {if SymbolTable[ref] = INT then IREF IDENTIFIER else BREF IDENTIFIER}
      | LPAREN expr RPAREN {expr}
 ```
 
@@ -172,26 +170,62 @@ to be generated
 ```While.compile "<filename>";```
 
 If all goes well, you should see an output similar to the following (this is 
-the output for `test_prog.while`
+the output for `test2.while`
 
 ```
 val it =
   PROG
-    ([INT "x",INT "y",BOOL "z"],
-     [SET ("x",NUM 5),RD "y",
-      ITE
-        (EQ (ADD (REF "x",REF "y"),NUM 120),[SET ("z",TRUE)],
-         [SET ("z",FALSE)]),WR (REF "y")]) : ?.DataTypes.PROG
+    ([INT "word1",INT "word2",INT "id",INT "x",INT "y",INT "z",BOOL "a",
+      BOOL "b",BOOL "c"],
+     [WH
+        (AND (LT (IREF "x",IREF "y"),LT (BREF "a",BREF "b")),
+         [SETINT ("x",NUM 5),SETINT ("y",SUB (IREF "z",NUM 3)),
+          SETINT ("z",SUB (IREF "z",NUM 1)),
+          SETBOOL ("a",OR (BREF "b",BREF "c"))]),
+      ITE (EQ (IREF "x",NUM 5),[SETINT ("y",NUM 2)],[SETINT ("y",NUM 3)])])
+  : ?.DataTypes.PROG
 ```
 
 ## Other Design Decisions
 
+There are two primary design decisions taken here:
+1. *Unified integer and Boolean expression*: This decision was taken to avoid 
+   reduce/reduce conflicts in the parser. Parsing of expressions is context 
+   dependent (an integer assignment needs an integer expression, a boolean one 
+   a boolean expression). In addition, the relational operators are polymorphic,
+   and also operate on boolean types. This would be handled in a later stage, hence
+   at this stage, all we do is unify the expression, and let the evaluator raise
+   evaluation errors as and when the expression is evaluated and a type is returned
+2. *Symbol Table Impelmentation*: The symbol table maps an identifier to a type,
+   and will be used to determine the return type of expressions in the language
+   at runtime (in a later stage).
+
+Other design decisions are self-explanatory: the AST datatype incorporates references and assignment variable types, to make semantic analysis easier for the next stages.
 
 ## Other Implementation Decisions
 
+The implementations of `makeVarList`, `prependAll` and `set` are as below:
+
+```
+fun makeVarList (l::L) t = (
+        SymbolTable := update (!SymbolTable) l (t l);
+        (t l)::(makeVarList L t))
+  | makeVarList []     t = []
+
+fun prependAll (l::L) L' = l::(prependAll L L')
+  | prependAll []     L' = L'
+
+fun set id expr =
+    case lookup (!SymbolTable) id of 
+        (INT s) => SETINT (id, expr)
+      | (BOOL b) => SETBOOL (id, expr)
+```
+
+`SymbolTable` is a dictionary of type `string*DEC`. The Glue code in `glue.sml` creates the WhileParser, while the structure in `compiler.sml` is the final compiler, that compiles the code. `ml-yacc` uses a predictive parser, hence it can change the values of certain tokens or insert tokens where neccessary to fit the rules, eg a missing semicolon or brace. 
 
 ## Acknowledgements
+
 Most of the work here used the framework and design for the pi-calculus parser
 in the [User's Guide to ML-Lex and ML-Yacc](http://rogerprice.org/ug/ug.pdf) by 
-[Roger Price](http://rogerprice.org/).  
+[Roger Price](http://rogerprice.org/). The `Dictionary` structure used for the Symbol Table was created by Yamatodani Kiyoshi of Tohoku University. 
 

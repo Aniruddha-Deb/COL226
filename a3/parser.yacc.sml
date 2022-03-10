@@ -9,12 +9,22 @@ struct
 structure Header = 
 struct
 open DataTypes
+open Dictionary
 
-fun makeVarList (l::L) t = (t l)::(makeVarList L t)
+val SymbolTable = ref (create())
+
+fun makeVarList (l::L) t = (
+        SymbolTable := update (!SymbolTable) l (t l);
+        (t l)::(makeVarList L t))
   | makeVarList []     t = []
 
 fun prependAll (l::L) L' = l::(prependAll L L')
   | prependAll []     L' = L'
+
+fun set id expr =
+    case lookup (!SymbolTable) id of 
+        (INT s) => SETINT (id, expr)
+      | (BOOL b) => SETBOOL (id, expr)
 
 
 end
@@ -540,7 +550,7 @@ MlyValue.TOK_ID TOK_ID1, TOK_ID1left, _)) :: rest671)) => let val
 result = MlyValue.cmd (fn _ => let val  (TOK_ID as TOK_ID1) = TOK_ID1
  ()
  val  (expr as expr1) = expr1 ()
- in (SET (TOK_ID, expr))
+ in (set TOK_ID expr)
 end)
  in ( LrTable.NT 5, ( result, TOK_ID1left, expr1right), rest671)
 end
@@ -618,7 +628,9 @@ end
 |  ( 21, ( ( _, ( MlyValue.TOK_ID TOK_ID1, TOK_ID1left, TOK_ID1right))
  :: rest671)) => let val  result = MlyValue.expr (fn _ => let val  (
 TOK_ID as TOK_ID1) = TOK_ID1 ()
- in (REF TOK_ID)
+ in (
+case lookup (!SymbolTable) TOK_ID of (INT s) => (IREF TOK_ID) | (BOOL b) => (BREF TOK_ID)
+)
 end)
  in ( LrTable.NT 7, ( result, TOK_ID1left, TOK_ID1right), rest671)
 end

@@ -115,7 +115,7 @@ val lin = ref 1;
 val col = ref 0;
 val eolpos = ref 0;
 
-val eof = fn filename => T.TOK_EOF (!lin, !col);
+val eof = fn filename => (lin := 1; col := 0; T.TOK_EOF (!lin, !col));
 
 fun inc a = a := !a + 1
 

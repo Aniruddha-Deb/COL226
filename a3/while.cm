@@ -2,6 +2,7 @@ Library
     structure While
 is
     datatypes.sml (* Lot of datatypes *)
+    dict.sml (* symbol table dictionary *)
     lexer.lex: mllex (* Lexer rules. *)
     parser.yacc: MLYacc (* Parser rules. *)
     glue.sml (* Build the parser *)
