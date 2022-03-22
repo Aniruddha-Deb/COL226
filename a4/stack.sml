@@ -5,6 +5,7 @@ sig
     exception Error of string
     val create : unit -> 'a Stack
     val push : 'a * 'a Stack -> 'a Stack 
+    val pushAll : 'a list * 'a Stack -> 'a Stack
     val pop : 'a Stack -> 'a Stack
     val top : 'a Stack -> 'a
     val empty: 'a Stack -> bool
@@ -35,6 +36,8 @@ struct
     fun create () = []
 
     fun push (a,S) = (a::S)
+
+    fun pushAll (L,S) = (L @ S)
 
     fun pop [] = raise EmptyStack 
       | pop (a::S) = S

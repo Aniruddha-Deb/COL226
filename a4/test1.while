@@ -1,0 +1,7 @@
+program test ::
+    var x,y: int;
+    var z: bool;
+{
+    read x;
+    write x+y;
+}
