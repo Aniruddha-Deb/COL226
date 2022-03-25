@@ -5,6 +5,7 @@ sig
     val createSymbolTable : DataTypes.DEC list -> Table.SymbolTable
     val allocate : Table.SymbolTable -> int array
     val getTable : string -> Table.SymbolTable
+    val createCommandStack : string -> Vmc.Command FunStack.Stack
 end
 
 structure While : WHILE =
@@ -55,6 +56,12 @@ struct
         table
     end
 
-    fun 
+    fun createCommandStack filename = 
+    let
+        val (DataTypes.PROG (dcl, cml)) = compile filename
+        val stack = Vmc.postfix (List.rev cml)
+    in
+        stack
+    end
 
 end;

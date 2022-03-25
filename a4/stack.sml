@@ -27,7 +27,7 @@ sig
     val toString: ('a -> string) -> 'a Stack -> string
 end
 
-structure FunStack :> STACK =
+structure FunStack : STACK =
 struct
     type 'a Stack = 'a list
     exception EmptyStack
