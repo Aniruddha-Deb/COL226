@@ -1,0 +1,14 @@
+program test4 ::
+    var x,y,z: int;
+{
+    x := 5;
+    while x > 0 do {
+        write x;
+        y := 0;
+        while y < x do {
+            write y;
+            y := y+1;
+        } endwh;
+        x := x-1;
+    } endwh ;
+}

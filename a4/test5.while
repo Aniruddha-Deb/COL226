@@ -1,0 +1,9 @@
+program test5 ::
+    var x: int;
+    var y: bool;
+    var z: int;
+{
+    read x;
+    read y;
+    read z;
+}

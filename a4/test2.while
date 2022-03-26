@@ -3,6 +3,7 @@ program test2 ::
     var x,y,z: int;
     var a,b,c: bool;
 {
+
     while (x<y) && (a<b) do {
         x := 5;
         y := z-3;
