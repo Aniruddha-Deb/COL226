@@ -10,7 +10,6 @@ sig
     val execute: string -> unit
 
     val createCommandStack: string -> Command FunStack.Stack
-    val stack_to_string: Command FunStack.Stack -> string
     val getTable: string -> Table.SymbolTable
     
 end
