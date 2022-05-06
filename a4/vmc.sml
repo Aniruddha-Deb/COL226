@@ -222,7 +222,7 @@ struct
     let
         val s1 = FunStack.push (SET,S)
         val s2 = FunStack.push (Expression (parse_expr [] e),s1)
-        val s3 = FunStack.push ((Variable s),s1)
+        val s3 = FunStack.push ((Variable s),s2)
     in
         postfix_rec s3 L
     end
